@@ -1,1 +1,2 @@
-tcp_client1/target/*
+*/target/*
+*/Cargo.lock
