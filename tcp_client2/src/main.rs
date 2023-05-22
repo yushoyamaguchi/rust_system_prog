@@ -26,7 +26,8 @@ fn main() {
             });
 
             let receiver = thread::spawn(move || {
-                let mut reader = BufReader::new(&*stream_for_read.lock().unwrap());
+                let lock = stream_for_read.lock().unwrap();
+                let mut reader = BufReader::new(&*lock);
                 loop {
                     let mut response = String::new();
                     if let Ok(_size) = reader.read_line(&mut response) {
