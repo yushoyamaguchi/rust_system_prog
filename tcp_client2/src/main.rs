@@ -1,49 +1,45 @@
-use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
-use std::str;
-use std::thread;
-use std::time::Duration;
-use std::sync::{Arc, Mutex};
+use std::io::{self, Read, Write};
+use std::str::from_utf8;
 
 fn main() {
     match TcpStream::connect("localhost:10120") {
-        Ok(stream) => {
+        Ok(mut stream) => {
             println!("Successfully connected to server in port 10120");
 
-            let stream_clone = Arc::new(Mutex::new(stream));
-            let stream_for_read = Arc::clone(&stream_clone);
-            let stream_for_write = Arc::clone(&stream_clone);
-
-            let sender = thread::spawn(move || {
-                loop {
-                    let msg = b"Hello, Server!";
-                    let mut stream = stream_for_write.lock().unwrap();
-                    stream.write_all(msg).unwrap();
-                    drop(stream);
-                    println!("Sent message: {}", str::from_utf8(msg).unwrap());
-                    thread::sleep(Duration::from_secs(2));
+            loop {
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).unwrap();
+                if input.trim() == "exit" {
+                    break;
                 }
-            });
-
-            let receiver = thread::spawn(move || {
-                let lock = stream_for_read.lock().unwrap();
-                let mut reader = BufReader::new(&*lock);
-                loop {
-                    let mut response = String::new();
-                    if let Ok(_size) = reader.read_line(&mut response) {
-                        println!("Response from server: {}", response);
-                    } else {
-                        eprintln!("Failed to receive response from server");
+                
+                let msg = input.as_bytes();
+                match stream.write_all(msg) {
+                    Ok(_) => {
+                    },
+                    Err(e) => {
+                        println!("Failed to send message: {}", e);
+                        break;
                     }
                 }
-            });
+                println!("Sent message, awaiting reply...");
 
-            // Wait for both threads to complete
-            let _ = sender.join();
-            let _ = receiver.join();
+                let mut data = [0 as u8; 50]; // using 50 byte buffer for larger messages
+                match stream.read(&mut data) {
+                    Ok(_) => {
+                        let text = from_utf8(&data).unwrap();
+                        println!("Reply: {}", text);
+                    },
+                    Err(e) => {
+                        println!("Failed to receive data: {}", e);
+                    }
+                }
+            }
         },
         Err(e) => {
             println!("Failed to connect: {}", e);
         }
     }
+    println!("Terminated.");
 }
