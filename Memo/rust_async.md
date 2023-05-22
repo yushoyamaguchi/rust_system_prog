@@ -21,6 +21,7 @@ JoinHandle型の中には、joinメソッド(pthreadのjoinと同じく終了を
 
 # join
 pthreadと違って、待つだけでなく、Futureを引数として渡して、そのFutureを終わらせるという意味もある(tokioの場合だけ？)
+(Futureをスレッドorタスクに割り当てることで)Futureを完了させ、スレッドorタスクが終了するのを待つ、という感じ？
 
 
 # 引用
