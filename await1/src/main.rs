@@ -8,7 +8,9 @@ async fn main() {
     let task3 = tokio::spawn(async_task("Task 3"));
 
     // 全てのタスクが完了するのを待つ
-    let _ = tokio::join!(task1, task2, task3);
+    let _task1 = task1.await.unwrap();
+    let _task2 = task2.await.unwrap();
+    let _task3 = task3.await.unwrap();
 }
 
 // 5秒間スリープする非同期関数
