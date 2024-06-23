@@ -4,11 +4,16 @@ use tokio::time::{Duration};
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     tokio::spawn(async {
-        tokio::time::sleep(Duration::from_secs(3)).await;
-        println!("woke up!"); // 表示されない！
+        wake_up().await;
     });
 
     //std::thread::sleep(Duration::from_secs(5));  //こっちに変えると、woke upのタスクが実行されないままプログラムが終わる
     tokio::time::sleep(Duration::from_secs(5)).await;
     println!("Done");
+}
+
+
+async fn wake_up() {
+    tokio::time::sleep(Duration::from_secs(3)).await;
+    println!("woke up!");
 }
